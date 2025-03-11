@@ -13,9 +13,7 @@
     <button id="authenticate">Login with OAuth</button>
 
     <!-- Placeholder for the Embedded Dashboard -->
-    <div id="vizContainer" style="width: 800px; height: 600px; border: 1px solid black; margin-top: 20px;">
-        <tableau-viz id="tableauViz" width="800" height="600" hide-tabs></tableau-viz>
-    </div>
+    <div id="vizContainer" style="width: 800px; height: 600px; border: 1px solid black; margin-top: 20px;"></div>
 
     <script>
         const clientId = "47020635-fb8d-4f18-8a48-7e8741557511";  // Your Tableau Client ID
@@ -28,11 +26,30 @@
             window.location.href = `${tableauDomain}/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
         });
 
-        // Function to get the OAuth token from the URL
-        function getOAuthToken() {
+        // Function to get the OAuth code from the URL
+        function getOAuthCode() {
             const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get("code");
-            return code;
+            return urlParams.get("code");
+        }
+
+        // Function to exchange OAuth code for an access token (requires a backend)
+        async function exchangeCodeForToken(code) {
+            const tokenEndpoint = `${tableauDomain}/oauth2/token`;
+            const response = await fetch(tokenEndpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `grant_type=authorization_code&client_id=${clientId}&code=${code}&redirect_uri=${redirectUri}`
+            });
+
+            if (!response.ok) {
+                console.error("Failed to get OAuth token.");
+                return null;
+            }
+
+            const data = await response.json();
+            return data.access_token;
         }
 
         // Securely store the OAuth token in session storage
@@ -45,42 +62,41 @@
             return sessionStorage.getItem("tableau_oauth_token");
         }
 
-        // Function to embed the dashboard using OAuth
+        // Function to embed the Tableau dashboard using OAuth
         function embedDashboard(oauthToken) {
             if (!oauthToken) {
-                console.log("No OAuth token found.");
+                console.error("No OAuth token found.");
                 return;
             }
 
-            let vizElement = document.getElementById("tableauViz");
-            vizElement.setAttribute("src", dashboardUrl);
-            vizElement.setAttribute("token", oauthToken);
+            let containerDiv = document.getElementById("vizContainer");
+            let options = {
+                hideTabs: true,
+                width: "800px",
+                height: "600px",
+                device: "desktop",
+                token: oauthToken  // Pass the OAuth token
+            };
+
+            let viz = new tableau.Viz(containerDiv, dashboardUrl, options);
         }
 
-        // Auto-refresh OAuth token
-        function refreshOAuthToken() {
+        // When the page loads, check if we have an OAuth token
+        window.onload = async function() {
             let token = getStoredToken();
-            if (token) {
-                console.log("Refreshing OAuth token...");
-                embedDashboard(token);
-            }
-        }
 
-        // When the page loads, check if we have a stored token
-        window.onload = function() {
-            let token = getOAuthToken();
-            if (token) {
-                storeToken(token);
-                embedDashboard(token);
-            } else {
-                let storedToken = getStoredToken();
-                if (storedToken) {
-                    embedDashboard(storedToken);
+            if (!token) {
+                let code = getOAuthCode();
+                if (code) {
+                    token = await exchangeCodeForToken(code);
+                    if (token) {
+                        storeToken(token);
+                        embedDashboard(token);
+                    }
                 }
+            } else {
+                embedDashboard(token);
             }
-
-            // Refresh the token every 10 minutes (600,000 milliseconds)
-            setInterval(refreshOAuthToken, 600000);
         };
     </script>
 </body>
