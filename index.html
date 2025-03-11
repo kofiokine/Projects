@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Embedded Dashboard</title>
+    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.js"></script>
+</head>
+<body>
+    <h2>Tableau Embedded Dashboard</h2>
+    
+    <button id="authenticate">Authenticate with OAuth</button>
+    
+    <div style="width: 800px; height: 600px; border: 1px solid black; margin-top: 20px;">
+        <tableau-viz
+            id="tableauViz"
+            src="YOUR_TABLEAU_DASHBOARD_URL"
+            width="800"
+            height="600"
+            hide-tabs
+        ></tableau-viz>
+    </div>
+
+    <script>
+        document.getElementById("authenticate").addEventListener("click", function() {
+            window.location.href = `https://YOUR-TABLEAU-ONLINE-DOMAIN/oauth2/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=http://localhost:3000/callback`;
+        });
+    </script>
+</body>
+</html>
