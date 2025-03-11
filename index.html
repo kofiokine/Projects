@@ -3,28 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau Embedded Dashboard</title>
+    <title>Tableau Embedded Dashboard with OAuth</title>
     <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.js"></script>
 </head>
 <body>
     <h2>Tableau Embedded Dashboard</h2>
-    
-    <button id="authenticate">Authenticate with OAuth</button>
-    
-    <div style="width: 800px; height: 600px; border: 1px solid black; margin-top: 20px;">
-        <tableau-viz
-            id="tableauViz"
-            src="YOUR_TABLEAU_DASHBOARD_URL"
-            width="800"
-            height="600"
-            hide-tabs
-        ></tableau-viz>
+
+    <!-- OAuth Login Button -->
+    <button id="authenticate">Login with OAuth</button>
+
+    <!-- Placeholder for the Embedded Dashboard -->
+    <div id="vizContainer" style="width: 800px; height: 600px; border: 1px solid black; margin-top: 20px;">
+        <tableau-viz id="tableauViz" width="800" height="600" hide-tabs></tableau-viz>
     </div>
 
     <script>
+        const clientId = "47020635-fb8d-4f18-8a48-7e8741557511";  // Your Tableau Client ID
+        const redirectUri = "https://kofiokine.github.io/Projects/";  // Your web app URL
+        const tableauDomain = "https://10ay.online.tableau.com"; // Your Tableau Online domain
+        const dashboardUrl = "https://10ay.online.tableau.com/t/forsightanalytics-c7b8da01a7/views/EmailPerformancebyCampaign/EmailPerformancebyCampaign";
+
+        // Function to start OAuth login
         document.getElementById("authenticate").addEventListener("click", function() {
-            window.location.href = `https://YOUR-TABLEAU-ONLINE-DOMAIN/oauth2/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=http://localhost:3000/callback`;
+            window.location.href = `${tableauDomain}/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
         });
+
+        // Function to get the OAuth token from the URL
+        function getOAuthToken() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get("code");
+            return code;
+        }
+
+        // Securely store the OAuth token in session storage
+        function storeToken(token) {
+            sessionStorage.setItem("tableau_oauth_token", token);
+        }
+
+        // Retrieve the token from session storage
+        function getStoredToken() {
+            return sessionStorage.getItem("tableau_oauth_token");
+        }
+
+        // Function to embed the dashboard using OAuth
+        function embedDashboard(oauthToken) {
+            if (!oauthToken) {
+                console.log("No OAuth token found.");
+                return;
+            }
+
+            let vizElement = document.getElementById("tableauViz");
+            vizElement.setAttribute("src", dashboardUrl);
+            vizElement.setAttribute("token", oauthToken);
+        }
+
+        // Auto-refresh OAuth token
+        function refreshOAuthToken() {
+            let token = getStoredToken();
+            if (token) {
+                console.log("Refreshing OAuth token...");
+                embedDashboard(token);
+            }
+        }
+
+        // When the page loads, check if we have a stored token
+        window.onload = function() {
+            let token = getOAuthToken();
+            if (token) {
+                storeToken(token);
+                embedDashboard(token);
+            } else {
+                let storedToken = getStoredToken();
+                if (storedToken) {
+                    embedDashboard(storedToken);
+                }
+            }
+
+            // Refresh the token every 10 minutes (600,000 milliseconds)
+            setInterval(refreshOAuthToken, 600000);
+        };
     </script>
 </body>
 </html>
