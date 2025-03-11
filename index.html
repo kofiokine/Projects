@@ -3,101 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau Embedded Dashboard with OAuth</title>
-    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.js"></script>
+    <title>Tableau Embedded Dashboard</title>
 </head>
 <body>
     <h2>Tableau Embedded Dashboard</h2>
-
-    <!-- OAuth Login Button -->
-    <button id="authenticate">Login with OAuth</button>
-
-    <!-- Placeholder for the Embedded Dashboard -->
-    <div id="vizContainer" style="width: 800px; height: 600px; border: 1px solid black; margin-top: 20px;"></div>
-
-    <script>
-        const clientId = "74cc9429-9e50-4d61-ae79-f5b29d98e4f4";  // New Client ID from Connected App
-        const redirectUri = "https://kofiokine.github.io/Projects/";  // Your web app URL
-        const tableauDomain = "https://10ay.online.tableau.com"; // Your Tableau Online domain
-        const dashboardUrl = "https://10ay.online.tableau.com/t/forsightanalytics-c7b8da01a7/views/EmailPerformancebyCampaign/EmailPerformancebyCampaign";
-
-        // Function to start OAuth login
-        document.getElementById("authenticate").addEventListener("click", function() {
-            window.location.href = `${tableauDomain}/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
-        });
-
-        // Function to get the OAuth code from the URL
-        function getOAuthCode() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get("code");
-        }
-
-        // Function to exchange OAuth code for an access token (requires a backend)
-        async function exchangeCodeForToken(code) {
-            const tokenEndpoint = `${tableauDomain}/oauth2/token`;
-            const response = await fetch(tokenEndpoint, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: `grant_type=authorization_code&client_id=${clientId}&code=${code}&redirect_uri=${redirectUri}`
-            });
-
-            if (!response.ok) {
-                console.error("Failed to get OAuth token.");
-                return null;
-            }
-
-            const data = await response.json();
-            return data.access_token;
-        }
-
-        // Securely store the OAuth token in session storage
-        function storeToken(token) {
-            sessionStorage.setItem("tableau_oauth_token", token);
-        }
-
-        // Retrieve the token from session storage
-        function getStoredToken() {
-            return sessionStorage.getItem("tableau_oauth_token");
-        }
-
-        // Function to embed the Tableau dashboard using OAuth
-        function embedDashboard(oauthToken) {
-            if (!oauthToken) {
-                console.error("No OAuth token found.");
-                return;
-            }
-
-            let containerDiv = document.getElementById("vizContainer");
-            let options = {
-                hideTabs: true,
-                width: "800px",
-                height: "600px",
-                device: "desktop",
-                token: oauthToken  // Pass the OAuth token
-            };
-
-            let viz = new tableau.Viz(containerDiv, dashboardUrl, options);
-        }
-
-        // When the page loads, check if we have an OAuth token
-        window.onload = async function() {
-            let token = getStoredToken();
-
-            if (!token) {
-                let code = getOAuthCode();
-                if (code) {
-                    token = await exchangeCodeForToken(code);
-                    if (token) {
-                        storeToken(token);
-                        embedDashboard(token);
-                    }
-                }
-            } else {
-                embedDashboard(token);
-            }
-        };
-    </script>
+    
+    <iframe src="https://10ay.online.tableau.com/t/forsightanalytics-c7b8da01a7/views/EmailPerformancebyCampaign/EmailPerformancebyCampaign?:embed=y&:showVizHome=no&:tabs=no" width="800" height="600"></iframe>
 </body>
 </html>
