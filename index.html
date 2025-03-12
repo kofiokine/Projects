@@ -30,9 +30,10 @@
         });
 
 
-        function login() {
-            auth0Client.authorize();
-        }
+        auth0Client.authorize({
+            responseType: "token id_token"  // ✅ Explicitly setting response_type
+        });
+
 
         function handleAuthentication() {
             auth0Client.parseHash((err, authResult) => {
