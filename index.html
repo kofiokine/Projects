@@ -9,7 +9,7 @@
 <body>
     <h2>Tableau Embedded Dashboard</h2>
     
-    <button id="login-btn" onclick="login()">Login with SSO</button>
+    <button id="login-btn">Login with SSO</button>
     <p id="welcome"></p>
     <div id="tableau-container" style="display:none;">
         <iframe id="tableau-iframe" 
@@ -26,23 +26,23 @@
             redirectUri: "https://kofiokine.github.io/Projects/callback",
             responseType: "token id_token",
             scope: "openid profile email",
-            audience: "47020635-fb8d-4f18-8a48-7e8741557511" // ✅ Correct Audience
+            audience: "47020635-fb8d-4f18-8a48-7e8741557511"
         });
 
-
-        auth0Client.authorize({
-            responseType: "token id_token"  // ✅ Explicitly setting response_type
-        });
-
+        document.getElementById('login-btn').onclick = function() {
+            auth0Client.authorize();
+        };
 
         function handleAuthentication() {
             auth0Client.parseHash((err, authResult) => {
                 if (authResult && authResult.accessToken && authResult.idToken) {
-                    auth0Client.userInfo(authResult.accessToken, function(err, user) {  // ✅ Fixed `client.userInfo`
+                    auth0Client.userInfo(authResult.accessToken, function(err, user) {
                         if (!err) {
                             document.getElementById("login-btn").style.display = "none";
                             document.getElementById("welcome").innerHTML = `Welcome, ${user.name}!`;
                             document.getElementById("tableau-container").style.display = "block";
+                        } else {
+                            console.log(err);
                         }
                     });
                 } else if (err) {
@@ -51,9 +51,7 @@
             });
         }
 
-        window.onload = function() {
-            handleAuthentication();
-        };
+        window.onload = handleAuthentication;
     </script>
 </body>
 </html>
