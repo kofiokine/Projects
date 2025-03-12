@@ -23,10 +23,12 @@
         const auth0Client = new auth0.WebAuth({
             domain: "dev-ltdreu8c7zz8icui.us.auth0.com",
             clientID: "ebOp2pntCCrNRMn6xLPqEjQaEK4dJblU",
-            redirectUri: "https://kofiokine.github.io/Projects/callback", 
+            redirectUri: "https://kofiokine.github.io/Projects/callback",
             responseType: "token id_token",
-            scope: "openid profile email"
+            scope: "openid profile email",
+            audience: "47020635-fb8d-4f18-8a48-7e8741557511" // ✅ Correct Audience
         });
+
 
         function login() {
             auth0Client.authorize();
