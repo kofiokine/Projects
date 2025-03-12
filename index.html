@@ -4,10 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau Embedded Dashboard</title>
+    <script src="https://cdn.auth0.com/js/auth0/9.19/auth0.min.js"></script>
 </head>
 <body>
     <h2>Tableau Embedded Dashboard</h2>
     
-    <iframe src="https://10ay.online.tableau.com/t/forsightanalytics-c7b8da01a7/views/EmailPerformancebyCampaign/EmailPerformancebyCampaign?:embed=y&:showVizHome=no&:tabs=no" width="800" height="600"></iframe>
+    <button id="login-btn" onclick="login()">Login with SSO</button>
+    <p id="welcome"></p>
+    <div id="tableau-container" style="display:none;">
+        <iframe id="tableau-iframe" 
+                src="https://10ay.online.tableau.com/t/forsightanalytics-c7b8da01a7/views/EmailPerformancebyCampaign/EmailPerformancebyCampaign?:embed=y&:showVizHome=no&:tabs=no" 
+                width="800" 
+                height="600">
+        </iframe>
+    </div>
+
+    <script>
+        const auth0Client = new auth0.WebAuth({
+            domain: "dev-ltdreu8c7zz8icui.us.auth0.com",
+            clientID: "eb0p2pntCCrNRMn6xLPqEjQaEK4dJb1U",
+            redirectUri: window.location.href,
+            responseType: "token id_token",
+            scope: "openid profile email"
+        });
+
+        function login() {
+            auth0Client.authorize();
+        }
+
+        function handleAuthentication() {
+            auth0Client.parseHash((err, authResult) => {
+                if (authResult && authResult.accessToken && authResult.idToken) {
+                    auth0Client.client.userInfo(authResult.accessToken, function(err, user) {
+                        if (!err) {
+                            document.getElementById("login-btn").style.display = "none";
+                            document.getElementById("welcome").innerHTML = `Welcome, ${user.name}!`;
+                            document.getElementById("tableau-container").style.display = "block";
+                        }
+                    });
+                } else if (err) {
+                    console.log(err);
+                }
+            });
+        }
+
+        window.onload = function() {
+            handleAuthentication();
+        };
+    </script>
 </body>
 </html>
