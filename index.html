@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau Dashboard with Auth0</title>
-    <!-- Use the latest Auth0 SPA SDK -->
+    <!-- Use the correct Auth0 SPA SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2/dist/auth0-spa-js.production.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", async function () {
@@ -35,7 +35,7 @@
             }
 
             document.getElementById("login").addEventListener("click", async function () {
-                console.log("Logging in...");
+                console.log("Login button clicked!");
                 await auth0Client.loginWithRedirect();
             });
 
